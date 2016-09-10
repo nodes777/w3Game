@@ -3,6 +3,7 @@ var myGamePiece;
 function startGame() {
     myGameArea.start();
     myGamePiece = new component(30, 30, "red", 10, 120);
+     myObstacle = new component(10, 200, "green", 300, 120);
 }
 
 var myGameArea = {
@@ -24,6 +25,9 @@ var myGameArea = {
     },
     clear : function(){
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    },
+    stop : function() {
+        clearInterval(this.interval);
     }
 }
 
@@ -44,16 +48,39 @@ function component(width, height, color, x, y) {
         this.x += this.speedX;
         this.y += this.speedY;
     }
+    this.crashWith = function(otherobj) {
+        var myleft = this.x;
+        var myright = this.x + (this.width);
+        var mytop = this.y;
+        var mybottom = this.y + (this.height);
+        var otherleft = otherobj.x;
+        var otherright = otherobj.x + (otherobj.width);
+        var othertop = otherobj.y;
+        var otherbottom = otherobj.y + (otherobj.height);
+        var crash = true;
+        if ((mybottom < othertop) ||
+               (mytop > otherbottom) ||
+               (myright < otherleft) ||
+               (myleft > otherright)) {
+           crash = false;
+        }
+        return crash;
+    }
 }
 
 function updateGameArea() {
-    myGameArea.clear();
-    myGamePiece.speedX = 0;
-    myGamePiece.speedY = 0;
-    if (myGameArea.keys && myGameArea.keys[37]) {myGamePiece.speedX = -1; }
-    if (myGameArea.keys && myGameArea.keys[39]) {myGamePiece.speedX = 1; }
-    if (myGameArea.keys && myGameArea.keys[38]) {myGamePiece.speedY = -1; }
-    if (myGameArea.keys && myGameArea.keys[40]) {myGamePiece.speedY = 1; }
-    myGamePiece.newPos();
-    myGamePiece.update();
+	if (myGamePiece.crashWith(myObstacle)) {
+        myGameArea.stop();
+    } else {
+	    myGameArea.clear();
+	    myGamePiece.speedX = 0;
+	    myGamePiece.speedY = 0;
+	    if (myGameArea.keys && myGameArea.keys[37]) {myGamePiece.speedX = -1; }
+	    if (myGameArea.keys && myGameArea.keys[39]) {myGamePiece.speedX = 1; }
+	    if (myGameArea.keys && myGameArea.keys[38]) {myGamePiece.speedY = -1; }
+	    if (myGameArea.keys && myGameArea.keys[40]) {myGamePiece.speedY = 1; }
+	    myObstacle.update();
+	    myGamePiece.newPos();
+	    myGamePiece.update();
+	}
 }
